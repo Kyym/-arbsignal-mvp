@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07101f">
+  <meta name="description" content="Manual odds arbitrage scanner MVP for football goals Over/Under markets.">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <title>ArbSignal | Arbitrage Scanner</title>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">A</span><span>Arb<span class="green">Signal</span></span><span class="pro">MVP</span></div>
+    <div class="header-right"><span class="status-dot"></span><span>LOCAL SCANNER</span><button id="installBtn" class="install-btn" hidden>Install app</button></div>
+  </header>
+
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">ODDS INTELLIGENCE / MANUAL TEST MODE</p>
+        <h1>Arbitrage <span class="green">Scanner</span></h1>
+        <p class="subhead">Compare both sides of a goals market, validate the inputs, and calculate balanced stakes.</p>
+      </div>
+      <div class="source-pill"><span class="pulse"></span> MANUAL ODDS <small>not a live feed</small></div>
+    </section>
+
+    <section class="stats-grid">
+      <article class="stat-card"><span>OPPORTUNITIES</span><strong id="statTotal">0</strong><small>Scanned in this session</small></article>
+      <article class="stat-card"><span>QUALIFIED ARBS</span><strong id="statQualified" class="green">0</strong><small>Above your threshold</small></article>
+      <article class="stat-card"><span>BEST POTENTIAL EDGE</span><strong id="statBest">—</strong><small>Before fees / settlement risk</small></article>
+      <article class="stat-card"><span>MIN PROFIT THRESHOLD</span><strong id="statThreshold">1.00%</strong><small>Configurable below</small></article>
+    </section>
+
+    <div class="main-grid">
+      <section class="panel">
+        <div class="panel-heading"><div><p class="eyebrow">01 / INPUT</p><h2>Scan a market</h2></div><span class="tag">MANUAL ENTRY</span></div>
+        <form id="scanForm">
+          <label>Fixture / match<input name="fixture" placeholder="e.g. Energie Cottbus vs Nurnberg" maxlength="120" required></label>
+          <div class="two-col">
+            <label>Market<select name="market"><option value="goals_over_under">Goals Over / Under</option></select></label>
+            <label>Goals line<select name="line"><option value="0.5">0.5 goals</option><option value="1.5">1.5 goals</option><option value="2.5" selected>2.5 goals</option><option value="3.5">3.5 goals</option><option value="4.5">4.5 goals</option></select></label>
+          </div>
+          <div class="outcome-box over-box">
+            <div class="outcome-title"><span class="outcome-dot over-dot"></span><strong>OVER <span id="overLineLabel">2.5</span> GOALS</strong></div>
+            <label>Bookmaker<input name="overBookmaker" placeholder="e.g. Bookmaker A" maxlength="80" required></label>
+            <label>Decimal odds<input name="overOdds" type="number" min="1.01" max="1000" step="0.01" placeholder="1.76" required></label>
+          </div>
+          <div class="outcome-box under-box">
+            <div class="outcome-title"><span class="outcome-dot under-dot"></span><strong>UNDER <span id="underLineLabel">2.5</span> GOALS</strong></div>
+            <label>Bookmaker<input name="underBookmaker" placeholder="e.g. Bookmaker B" maxlength="80" required></label>
+            <label>Decimal odds<input name="underOdds" type="number" min="1.01" max="1000" step="0.01" placeholder="3.66" required></label>
+          </div>
+          <div class="notice"><span>i</span><p>Both odds must refer to the <b>same fixture, same goals line, and compatible settlement rules</b>. Use different bookmakers for the two sides.</p></div>
+          <button class="primary-btn" type="submit"><span>↗</span> Scan these odds</button>
+          <p id="formMessage" class="form-message" role="status"></p>
+        </form>
+      </section>
+
+      <section class="panel settings-panel">
+        <div class="panel-heading"><div><p class="eyebrow">02 / CONFIGURATION</p><h2>Scanner settings</h2></div><span class="gear">⚙</span></div>
+        <form id="settingsForm">
+          <label>Minimum potential profit (%)<input id="minProfitPct" type="number" min="0" max="100" step="0.1" value="1" required></label>
+          <p class="field-help">Only mark opportunities as qualified when the mathematical edge meets this threshold.</p>
+          <label>Total bankroll / stake pool<input id="bankroll" type="number" min="1" max="1000000000" step="1" value="1000" required></label>
+          <p class="field-help">Used to illustrate stake allocation in the same currency unit you enter.</p>
+          <button class="secondary-btn" type="submit">Save settings</button>
+          <p id="settingsMessage" class="form-message" role="status"></p>
+        </form>
+        <div class="formula-card"><span class="eyebrow">DETECTION RULE</span><div class="formula">1 / Over odds + 1 / Under odds <b>1</b></div><p>If the sum is below 1, the prices form a theoretical two-way arbitrage—subject to real-world execution and settlement conditions.</p></div>
+      </section>
+    </div>
+
+    <section class="panel results-panel">
+      <div class="panel-heading results-heading"><div><p class="eyebrow">03 / RESULTS</p><h2>Opportunity feed</h2></div><div class="result-actions"><span class="live-chip"><span class="status-dot"></span> SOCKET CONNECTED</span><button id="clearBtn" class="text-btn">Clear feed</button></div></div>
+      <div id="emptyState" class="empty-state"><div class="empty-icon">⌁</div><h3>No odds scanned yet</h3><p>Enter both sides of a goals market to calculate whether the prices create an arbitrage.</p><button id="demoBtn" class="secondary-btn">Load example odds</button></div>
+      <div id="opportunityList" class="opportunity-list"></div>
+    </section>
+
+    <footer><div class="brand mini"><span class="brand-mark">A</span><span>Arb<span class="green">Signal</span></span></div><p>Educational MVP · Manual inputs · Not financial advice</p><p class="disclaimer">“Qualified” means the displayed odds pass the formula and your threshold; it does not guarantee that a bookmaker will accept the stake or settle both bets as expected.</p></footer>
+  </main>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
